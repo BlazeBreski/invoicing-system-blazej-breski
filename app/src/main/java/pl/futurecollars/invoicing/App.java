@@ -4,13 +4,35 @@
 
 package pl.futurecollars.invoicing;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import pl.futurecollars.invoicing.db.Database;
+import pl.futurecollars.invoicing.db.memory.InMemoryDatabase;
+import pl.futurecollars.invoicing.model.Company;
+import pl.futurecollars.invoicing.model.Invoice;
+import pl.futurecollars.invoicing.model.InvoiceEntry;
+import pl.futurecollars.invoicing.model.Vat;
+import pl.futurecollars.invoicing.service.InvoiceService;
+
 public class App {
-
-  public String getGreeting() {
-    return "Hello World!";
-  }
-
   public static void main(String[] args) {
-    System.out.println(new App().getGreeting());
+    Database db = new InMemoryDatabase();
+    InvoiceService service = new InvoiceService(db);
+
+    Company buyer = new Company("Company1", "555-123-456-789", "przykładowy adres");
+    Company seller = new Company("Company2", "123-456-789-012", "przykładowy adres");
+
+    List<InvoiceEntry> products = List.of(new InvoiceEntry("Programming course", BigDecimal.valueOf(10000), BigDecimal.valueOf(2300), Vat.VAT_23));
+
+    Invoice invoice = new Invoice(1, LocalDateTime.now(), buyer, seller, products);
+
+    int id = service.save(invoice);
+
+    service.getById(id).ifPresent(System.out::println);
+
+    System.out.println(service.getAll());
+
+    service.delete(id);
   }
 }
